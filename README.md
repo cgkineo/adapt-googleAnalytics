@@ -14,13 +14,13 @@ An extension to facilitate [Google Analytics](https://developers.google.com/anal
 * Populate `_trackingID` with the [tracking ID](https://support.google.com/analytics/answer/1032385) of your Google Analytics property.
 * Copy the extension folder into the src > extensions directory and run an appropriate Grunt task.
 
-### Usage
+## Usage
 
 * Every time a menu or page is loaded, a `pageview` is recorded with a new URL and title.
 * Pop-up interactions are tracked through custom events e.g. launching Notify, Drawer etc.
 * [Media](https://github.com/adaptlearning/adapt-contrib-media) plays and percentage viewed are also tracked.
 
-### Attributes
+## Attributes
 
 Attribute | Type | Description | Default
 --------- | ---- | ----------- | -------
