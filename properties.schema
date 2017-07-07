@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "http://jsonschema.net",
+  "properties": {
+    "pluginLocations": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "properties": {
+            "_googleAnalytics": {
+              "type": "object",
+              "legend": "Google Analytics",
+              "properties": {
+                "_isEnabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "title": "Is enabled",
+                  "inputType": "Checkbox",
+                  "help": "Enable Google Analytics tracking"
+                },
+                "_isDebugMode": {
+                  "type": "boolean",
+                  "default": false,
+                  "title": "Is debug mode",
+                  "inputType": "Checkbox",
+                  "help": "Display notifications when pageviews and events are tracked"
+                },
+                "_trackingId": {
+                  "type": "string",
+                  "required": true,
+                  "title": "Tracking ID",
+                  "inputType": "Text",
+                  "validators": [
+                    "required"
+                  ],
+                  "help": "Enter the tracking ID of the Google Analytics property to track"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

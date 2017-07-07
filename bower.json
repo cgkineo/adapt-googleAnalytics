@@ -1,0 +1,16 @@
+{
+	"name": "adapt-googleAnalytics",
+	"version": "0.1.0",
+	"framework": ">=1.1.2",
+	"displayName": "Google Analytics",
+	"extension": "googleAnalytics",
+	"targetAttribute": "_googleAnalytics",
+	"description": "An extension to faciliate Google Analytics in Adapt",
+	"main": "/js/adapt-googleAnalytics.js",
+	"keywords": [
+		"adapt-plugin",
+		"adapt-extension"
+	],
+	"license": "GPL-3.0",
+	"homepage": "https://github.com/cgkineo/adapt-googleAnalytics"
+}
