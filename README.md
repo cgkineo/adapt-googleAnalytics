@@ -1,6 +1,6 @@
 # Google Analytics
 
-An extension to faciliate [Google Analytics](https://developers.google.com/analytics) in Adapt.
+An extension to facilitate [Google Analytics](https://developers.google.com/analytics) in Adapt.
 
 ## Installation
 

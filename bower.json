@@ -5,7 +5,7 @@
 	"displayName": "Google Analytics",
 	"extension": "googleAnalytics",
 	"targetAttribute": "_googleAnalytics",
-	"description": "An extension to faciliate Google Analytics in Adapt",
+	"description": "An extension to facilitate Google Analytics in Adapt",
 	"main": "/js/adapt-googleAnalytics.js",
 	"keywords": [
 		"adapt-plugin",
