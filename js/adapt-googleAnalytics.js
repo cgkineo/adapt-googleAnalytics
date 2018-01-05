@@ -41,6 +41,8 @@ define([ "coreJS/adapt" ], function(Adapt) {
 	}
 
 	function onPopUpOpened($element) {
+		if ($element.data("adaptId")) return;
+
 		var id = $element.closest("[data-adapt-id]").data("adaptId");
 
 		if (id) trackEvent("Interactions", "Pop-up", Adapt.findById(id).get("title"));
