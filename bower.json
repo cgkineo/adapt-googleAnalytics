@@ -1,7 +1,7 @@
 {
 	"name": "adapt-googleAnalytics",
-	"version": "0.1.1",
-	"framework": ">=1.1.2",
+	"version": "0.2.0",
+	"framework": ">=2.0.16",
 	"displayName": "Google Analytics",
 	"extension": "googleAnalytics",
 	"targetAttribute": "_googleAnalytics",

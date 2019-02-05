@@ -1,22 +1,18 @@
-define([ "coreJS/adapt" ], function(Adapt) {
+define([ "core/js/adapt" ], function(Adapt) {
 
 	function onViewReady(view) {
-		var title = view.model.get("title");
-
-		ga("set", {
+		var fields = {
 			page: location.pathname + location.search + location.hash,
-			title: title
-		});
+			title: view.model.get("title")
+		};
 
-		ga("send", "pageview");
+		ga("set", fields);
 
-		if (!Adapt.config.get("_googleAnalytics")._isDebugMode) return;
-
-		Adapt.trigger("notify:push", {
-			title: new Date().toLocaleTimeString() + " Google Analytics pageview:",
-			body: title,
-			_timeout: 2500
-		});
+		ga("send", "pageview", { hitCallback: function() {
+			Adapt.trigger("googleAnalytics:hitCallback", _.extend(fields, {
+				hitType: "pageview"
+			}));
+		}});
 	}
 
 	function onDrawerToggle() {
@@ -24,7 +20,7 @@ define([ "coreJS/adapt" ], function(Adapt) {
 	}
 
 	function onDrawerTriggerCustomView($element) {
-		if ($element.hasClass("page-level-progress")) {
+		if ($element.hasClass("pagelevelprogress")) {
 			trackEvent("Interactions", "Pop-up", "Page Level Progress");
 		}
 		if ($element.hasClass("resources")) {
@@ -32,37 +28,11 @@ define([ "coreJS/adapt" ], function(Adapt) {
 		}
 	}
 
-	function onNotifyPopUp(data) {
-		if (data._classes) return;
-
-		var title = data.title;
-
-		if (title) trackEvent("Interactions", "Pop-up", title);
-	}
-
-	function onPopUpOpened($element) {
-		if ($element.data("adaptId")) return;
-
-		var id = $element.closest("[data-adapt-id]").data("adaptId");
-
-		if (id) trackEvent("Interactions", "Pop-up", Adapt.findById(id).get("title"));
-	}
-
-	function onShowFeedback(view) {
-		trackEvent("Interactions", "Pop-up", view.model.get("title"));
-	}
-
 	function onIsMediaPlayingChange(model, isMediaPlaying) {
-		isMediaPlaying ? onMediaPlay(model) : onMediaPause(model);
-	}
+		if (isMediaPlaying) return trackEvent("Videos", "Play", model.get("title"));
 
-	function onMediaPlay(model) {
-		trackEvent("Videos", "Play", model.get("title"));
-	}
-
-	function onMediaPause(model) {
-		var video = $("." + model.get("_id")).find("video")[0];
-		var duration = video ? video.duration : 0;
+		var video = $("[data-adapt-id='" + model.get("_id") + "']").find("video")[0];
+		var duration = video && video.duration;
 
 		if (!duration) return;
 
@@ -71,24 +41,35 @@ define([ "coreJS/adapt" ], function(Adapt) {
 		trackEvent("Videos", "Percentage seen", model.get("title"), percentage);
 	}
 
+	function onNotifyOpened(view) {
+		var subView = view.subView;
+		var model = subView ? subView.model : view.model;
+
+		trackEvent("Interactions", "Pop-up", model.get("title"));
+	}
+
 	function trackEvent(category, action, label, value, isNonInteraction) {
 		var event = {
 			hitType: "event",
 			eventCategory: category,
 			eventAction: action,
-			eventLabel: label
+			eventLabel: label,
+			hitCallback: function() {
+				Adapt.trigger("googleAnalytics:hitCallback", event);
+			}
 		};
 
-		if (value !== undefined) event.eventValue = value;
+		if (_.isNumber(value)) event.eventValue = value;
 		if (isNonInteraction) event.nonInteraction = isNonInteraction;
 
 		ga("send", event);
+	}
 
-		if (!Adapt.config.get("_googleAnalytics")._isDebugMode) return;
-
+	function onHitCallback(data) {
 		Adapt.trigger("notify:push", {
-			title: new Date().toLocaleTimeString() + " Google Analytics event:",
-			body: JSON.stringify(event, null, "\t"),
+			title: new Date().toLocaleTimeString() + " Google Analytics hit sent:",
+			body: "<span>" + JSON.stringify(data, null, "\t") + "</span>",
+			_classes: "google-analytics",
 			_timeout: 2500
 		});
 	}
@@ -98,22 +79,23 @@ define([ "coreJS/adapt" ], function(Adapt) {
 
 		if (!config || !config._isEnabled) return;
 
-		var mediaModels = Adapt.components.where({ _component: "media" });
-
 		$("head").append(Handlebars.templates.googleAnalytics(config));
 
 		Adapt.on({
 			"menuView:ready pageView:ready": onViewReady,
 			"navigation:toggleDrawer": onDrawerToggle,
 			"drawer:triggerCustomView": onDrawerTriggerCustomView, // plp, resources
-			"notify:popup": onNotifyPopUp, // narrative
-			"popup:opened": onPopUpOpened, // hot graphic
-			"questionView:showFeedback": onShowFeedback
+			"notify:opened": onNotifyOpened,
+			"googleAnalytics:trackEvent": trackEvent
 		});
 
-		for (var i = 0, j = mediaModels.length; i < j; i++) {
-			mediaModels[i].on("change:_isMediaPlaying", onIsMediaPlayingChange);
+		if (config._isDebugMode) {
+			Adapt.on("googleAnalytics:hitCallback", onHitCallback);
 		}
+
+		Adapt.components.where({ _component: "media" }).forEach(function(model) {
+			model.on("change:_isMediaPlaying", onIsMediaPlayingChange);
+		});
 	});
 
 });

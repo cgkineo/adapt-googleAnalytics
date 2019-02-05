@@ -19,6 +19,11 @@ An extension to facilitate [Google Analytics](https://developers.google.com/anal
 * Every time a menu or page is loaded, a `pageview` is recorded with a new URL and title.
 * Pop-up interactions are tracked through custom events e.g. launching Notify, Drawer etc.
 * [Media](https://github.com/adaptlearning/adapt-contrib-media) plays and percentage viewed are also tracked.
+* Additional events can be tracked with
+  ```js
+  Adapt.trigger("googleAnalytics:trackEvent", category, action, label[, value[, isNonInteraction]]);
+  ```
+  Refer to `trackEvent()` in [adapt-googleAnalytics.js](js/adapt-googleAnalytics.js) and [Event Tracking](https://developers.google.com/analytics/devguides/collection/analyticsjs/events) for details.
 
 ## Attributes
 
