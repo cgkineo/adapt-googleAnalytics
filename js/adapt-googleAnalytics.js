@@ -1,101 +1,73 @@
-define([ "core/js/adapt" ], function(Adapt) {
+import Adapt from 'core/js/adapt';
 
-	function onViewReady(view) {
-		var fields = {
-			page: location.pathname + location.search + location.hash,
-			title: view.model.get("title")
-		};
+class GoogleAnalytics extends Backbone.Controller {
 
-		ga("set", fields);
+  initialize() {
+    this.listenTo(Adapt, {
+      'app:dataReady': this.onAppDataReady
+    });
+  }
 
-		ga("send", "pageview", { hitCallback: function() {
-			Adapt.trigger("googleAnalytics:hitCallback", _.extend(fields, {
-				hitType: "pageview"
-			}));
-		}});
-	}
+  _setupListeners() {
+    this.listenTo(Adapt, {
+      'contentObjectView:ready': this.onContentObjectViewReady,
+      'media': this.onMediaEvent,
+      'googleAnalytics:trackEvent': this.onTrackEvent
+    });
+  }
 
-	function onDrawerToggle() {
-		trackEvent("Interactions", "Pop-up", "Drawer");
-	}
+  onAppDataReady() {
+    this._config = Adapt.config.get('_googleAnalytics');
 
-	function onDrawerTriggerCustomView($element) {
-		if ($element.hasClass("pagelevelprogress")) {
-			trackEvent("Interactions", "Pop-up", "Page Level Progress");
-		}
-		if ($element.hasClass("resources")) {
-			trackEvent("Interactions", "Pop-up", "Resources");
-		}
-	}
+    if (!(this._config?._isEnabled)) return;
 
-	function onIsMediaPlayingChange(model, isMediaPlaying) {
-		if (isMediaPlaying) return trackEvent("Videos", "Play", model.get("title"));
+    this._setupListeners();
 
-		var video = $("[data-adapt-id='" + model.get("_id") + "']").find("video")[0];
-		var duration = video && video.duration;
+    $('head').append(Handlebars.templates.googleAnalytics(this._config));
+  }
 
-		if (!duration) return;
+  onContentObjectViewReady(view) {
+    gtag('event', 'page_view', {
+      page_location: location.pathname + location.search + location.hash,
+      page_title: view.model.get('title')
+    });
+  }
 
-		var percentage = parseInt(video.currentTime / duration * 100, 10);
+  onMediaEvent(attributes) {
+    /*
+    gtag('event', name, {
+      event_action: ,
+      event_category: ,
+      event_label: ,
+      value:
+    });
+    */
 
-		trackEvent("Videos", "Percentage seen", model.get("title"), percentage);
-	}
+    switch(attributes.type) {
+      case "play":
+        gtag('event', 'video_start', {
 
-	function onNotifyOpened(view) {
-		var subView = view.subView;
-		var model = subView ? subView.model : view.model;
+        });
+    }
 
-		trackEvent("Interactions", "Pop-up", model.get("title"));
-	}
+    console.log(attributes);
 
-	function trackEvent(category, action, label, value, isNonInteraction) {
-		var event = {
-			hitType: "event",
-			eventCategory: category,
-			eventAction: action,
-			eventLabel: label,
-			hitCallback: function() {
-				Adapt.trigger("googleAnalytics:hitCallback", event);
-			}
-		};
+    //gtag('event', name, attributes);
+  }
 
-		if (_.isNumber(value)) event.eventValue = value;
-		if (isNonInteraction) event.nonInteraction = isNonInteraction;
+  onTrackEvent(name, attributes) {
+    /*
+    gtag('event', name, {
+      event_action: ,
+      event_category: ,
+      event_label: ,
+      value:
+    });
+    */
 
-		ga("send", event);
-	}
+    gtag('event', name, attributes);
+  }
 
-	function onHitCallback(data) {
-		Adapt.trigger("notify:push", {
-			title: new Date().toLocaleTimeString() + " Google Analytics hit sent:",
-			body: "<span>" + JSON.stringify(data, null, "\t") + "</span>",
-			_classes: "google-analytics",
-			_timeout: 2500
-		});
-	}
+}
 
-	Adapt.once("app:dataReady", function() {
-		var config = Adapt.config.get("_googleAnalytics");
-
-		if (!config || !config._isEnabled) return;
-
-		$("head").append(Handlebars.templates.googleAnalytics(config));
-
-		Adapt.on({
-			"menuView:ready pageView:ready": onViewReady,
-			"navigation:toggleDrawer": onDrawerToggle,
-			"drawer:triggerCustomView": onDrawerTriggerCustomView, // plp, resources
-			"notify:opened": onNotifyOpened,
-			"googleAnalytics:trackEvent": trackEvent
-		});
-
-		if (config._isDebugMode) {
-			Adapt.on("googleAnalytics:hitCallback", onHitCallback);
-		}
-
-		Adapt.components.where({ _component: "media" }).forEach(function(model) {
-			model.on("change:_isMediaPlaying", onIsMediaPlayingChange);
-		});
-	});
-
-});
+export default new GoogleAnalytics();
